@@ -1,0 +1,20 @@
+from pathlib import Path
+p=Path('/tmp/anatomy/app/anatomy.ts'); s=p.read_text()
+s=s.replace("export interface SceneState {inspectorOpen?:boolean;explode:number;visible:SystemId[];selected:string[];isolate:boolean;view:View;rotate:boolean;reset:number}","export interface SceneState {inspectorOpen?:boolean;explode:number;visible:SystemId[];selected:string[];hidden:string[];isolate:boolean;view:View;rotate:boolean;reset:number}")
+s=s.replace("export function explanation(name:string,system:SystemId){", "export function hasSpecificExplanation(name:string){\n const key=name.toLowerCase().replace(/^right |^left /,'').replace(/ muscle$/,'');\n return key in EXPLANATIONS || key in MUSCLE_EXPLANATIONS;\n}\nexport function explanation(name:string,system:SystemId){")
+p.write_text(s)
+
+p=Path('/tmp/anatomy/app/page.tsx'); s=p.read_text()
+s=s.replace("import {DEFAULT_VISIBLE,SYSTEMS,EXPLANATIONS,explanation,type Atlas,type Concept,type SceneState,type SystemId,type View} from './anatomy';", "import {DEFAULT_VISIBLE,SYSTEMS,EXPLANATIONS,explanation,hasSpecificExplanation,type Atlas,type Concept,type SceneState,type SystemId,type View} from './anatomy';")
+s=s.replace("chosen&&!EXPLANATIONS[chosen.name.toLowerCase()]&&<span className=\"context-note\">System overview · structure identified from source anatomy</span>", "chosen&&!hasSpecificExplanation(chosen.name)&&<span className=\"context-note\">System overview · structure identified from source anatomy</span>")
+p.write_text(s)
+
+p=Path('/tmp/anatomy/app/scene.tsx'); s=p.read_text()
+s=s.replace("const changed=lastState?.visible!==s.visible||lastState?.selected!==s.selected||lastState?.isolate!==s.isolate;", "const changed=lastState?.visible!==s.visible||lastState?.selected!==s.selected||lastState?.hidden!==s.hidden||lastState?.isolate!==s.isolate;")
+s=s.replace("const visible=new Set(s.visible),selection=new Set(s.selected);\n    const visibleParts=atlas.parts.filter(p=>s.isolate?selection.has(p.id):visible.has(p.system)||selection.has(p.id));", "const visible=new Set(s.visible),selection=new Set(s.selected),hidden=new Set(s.hidden);\n    const visibleParts=atlas.parts.filter(p=>!hidden.has(p.id)&&(s.isolate?selection.has(p.id):visible.has(p.system)||selection.has(p.id)));" )
+s=s.replace("const selected=selection.has(p.id);data.set([dx,dy,dz,(s.isolate?selected:visible.has(p.system)||selected)?1:0],i*4);", "const selected=selection.has(p.id),isHidden=hidden.has(p.id);data.set([dx,dy,dz,(!isHidden&&(s.isolate?selected:visible.has(p.system)||selected))?1:0],i*4);")
+s=s.replace("const hasSolid=atlas.parts.some((p,i)=>p.system!=='integumentary'&&data[i*4+3]>.5);", "const hasSolid=atlas.parts.some((p,i)=>!s.hidden.includes(p.id)&&p.system!=='integumentary'&&data[i*4+3]>.5);")
+s=s.replace("if(!mesh||data[i*4+3]<.5||(hasSolid&&atlas.parts[i].system==='integumentary'))return;", "if(!mesh||s.hidden.includes(atlas.parts[i].id)||data[i*4+3]<.5||(hasSolid&&atlas.parts[i].system==='integumentary'))return;")
+s=s.replace("if(s.selected.includes(p.id))box.union", "if(s.selected.includes(p.id)&&!s.hidden.includes(p.id))box.union")
+s=s.replace("if(data[i*4+3]<.5||(hasSolid&&p.system==='integumentary'))return;", "if(s.hidden.includes(p.id)||data[i*4+3]<.5||(hasSolid&&p.system==='integumentary'))return;")
+p.write_text(s)
