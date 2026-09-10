@@ -1,15 +1,99 @@
 export type SystemId = 'skeletal'|'muscular'|'arterial'|'venous'|'nervous'|'digestive'|'respiratory'|'urinary'|'reproductive'|'lymphatic'|'endocrine'|'integumentary'|'connective'|'sensory'|'cardiac';
 export const SYSTEMS: {id:SystemId;name:string;color:string;description:string}[] = [
  {id:'skeletal',name:'Skeleton',color:'#e2d9ba',description:'Bones form the supporting framework of the body and provide attachment points for muscles.'},
- {id:'muscular',name:'Major Muscles',color:'#a85b50',description:'Major skeletal muscles used in strength training, posture, joint control, and everyday movement.'},
+ {id:'muscular',name:'Muscles',color:'#a85b50',description:'Skeletal muscles that generate movement, stabilize joints, maintain posture, and produce force.'},
  {id:'connective',name:'Tendons',color:'#d8d2c4',description:'Major tendons transfer force from skeletal muscles to bones and help transmit movement across joints.'},
 ];
 export interface Part {id:string;name:string;conceptId:string;system:SystemId;chunk:number;positions:number;normals:number;indices:number;vertexCount:number;indexCount:number;bounds:[number[],number[]]}
 export interface Concept {id:string;name:string;elements:string[]}
 export interface Atlas {version:string;sex?:'male';source?:string;scope?:string;parts:Part[];concepts:Concept[];chunks:{url:string;bytes:number;gzip?:string;gzipBytes?:number}[];triangles:number}
 export type View = 'three-quarter'|'front'|'back'|'side';
-export interface SceneState {inspectorOpen?:boolean;explode:number;visible:SystemId[];selected:string[];isolate:boolean;view:View;rotate:boolean;reset:number}
+export interface SceneState {inspectorOpen?:boolean;explode:number;visible:SystemId[];selected:string[];hidden:string[];isolate:boolean;view:View;rotate:boolean;reset:number}
 export const DEFAULT_VISIBLE:SystemId[] = ['skeletal','muscular','connective'];
+export const MUSCLE_EXPLANATIONS:Record<string,string> = {
+ 'adductor brevis':'A short muscle on the inner thigh. It pulls the thigh toward the midline and assists hip flexion and stabilization.',
+ 'adductor longus':'A fan-shaped inner-thigh muscle that draws the thigh inward and assists hip flexion and rotation, especially from a flexed position.',
+ 'adductor magnus':'The largest adductor muscle. It brings the thigh toward the midline and contributes to hip extension, helping stabilize the pelvis during standing and movement.',
+ 'brachialis':'A powerful elbow flexor located beneath the biceps brachii. It flexes the elbow regardless of whether the forearm is pronated or supinated.',
+ 'brachioradialis':'A forearm muscle that flexes the elbow most effectively with the forearm in a neutral, thumb-up position and helps return the forearm toward neutral.',
+ 'biceps brachii':'A two-headed muscle on the front of the upper arm. It flexes the elbow, supinates the forearm, and assists shoulder flexion.',
+ 'short head of biceps brachii':'The medial head of the biceps brachii. It contributes to elbow flexion and forearm supination and also assists shoulder flexion.',
+ 'long head of biceps brachii':'The lateral head of the biceps brachii. It flexes the elbow and supinates the forearm, while its tendon also contributes to shoulder stability.',
+ 'biceps femoris':'A hamstring muscle on the back of the thigh. It flexes the knee and extends the hip; its short head also helps rotate the flexed knee outward.',
+ 'long head of biceps femoris':'The long head of this hamstring extends the hip and flexes the knee, and it helps laterally rotate the leg when the knee is bent.',
+ 'short head of biceps femoris':'The short head of this hamstring primarily flexes the knee and helps laterally rotate the leg when the knee is bent.',
+ 'deltoid':'The rounded shoulder muscle. Its fibers abduct the arm, while the front and rear portions assist shoulder flexion and extension and contribute to rotation.',
+ 'clavicular part of deltoid':'The anterior portion of the deltoid. It helps flex and internally rotate the arm and contributes to lifting the arm forward.',
+ 'acromial part of deltoid':'The middle portion of the deltoid. It is the main contributor to shoulder abduction, especially after the arm begins moving away from the body.',
+ 'spinal part of deltoid':'The posterior portion of the deltoid. It helps extend and externally rotate the arm and assists horizontal abduction.',
+ 'external oblique':'A broad muscle on the side of the abdomen. It compresses the abdominal contents, bends the trunk, and rotates the trunk to the opposite side.',
+ 'extensor carpi radialis brevis':'A forearm muscle that extends and abducts the wrist, helping stabilize the hand during gripping and precise movements.',
+ 'extensor carpi radialis longus':'A forearm muscle that extends and abducts the wrist, contributing to wrist stability during lifting and gripping.',
+ 'extensor carpi ulnaris':'A posterior forearm muscle that extends and adducts the wrist and helps stabilize the wrist during forceful hand movements.',
+ 'extensor digitorum':'The main finger extensor in the posterior forearm. It straightens the fingers and assists wrist extension.',
+ 'extensor digitorum longus':'A lower-leg muscle that extends the toes and dorsiflexes the ankle, helping clear the foot during walking.',
+ 'flexor carpi radialis':'An anterior forearm muscle that flexes and abducts the wrist and helps stabilize the hand during gripping.',
+ 'flexor carpi ulnaris':'A forearm muscle that flexes and adducts the wrist, contributing strongly to wrist stability and controlled hand movements.',
+ 'humeral head of flexor carpi ulnaris':'The humeral portion of flexor carpi ulnaris. It contributes to wrist flexion and adduction and helps stabilize the wrist.',
+ 'ulnar head of flexor carpi ulnaris':'The ulnar portion of flexor carpi ulnaris. It contributes to wrist flexion and adduction and helps stabilize the wrist.',
+ 'flexor digitorum profundus':'A deep forearm muscle that flexes the distal joints of the fingers and assists overall finger flexion and grip.',
+ 'flexor digitorum superficialis':'A forearm muscle that primarily flexes the middle joints of the fingers and assists wrist and finger flexion.',
+ 'gluteus maximus':'The largest gluteal muscle. It powerfully extends and externally rotates the hip and is important for climbing, rising from a chair, running, and jumping.',
+ 'gluteus medius':'A lateral hip muscle that abducts the thigh and stabilizes the pelvis when standing or walking on one leg.',
+ 'gracilis':'A slender muscle on the inner thigh. It adducts the thigh and assists knee flexion and medial rotation of the leg.',
+ 'iliacus':'A deep hip flexor that works with the psoas major to flex the hip and lift the thigh toward the trunk.',
+ 'iliocostalis cervicis':'A portion of the erector spinae group that helps extend and laterally flex the cervical spine and maintain upright posture.',
+ 'iliocostalis lumborum':'A lower-back portion of the erector spinae. It extends and laterally flexes the spine and helps maintain spinal posture.',
+ 'iliocostalis thoracis':'A thoracic portion of the erector spinae that assists spinal extension, lateral flexion, and postural control.',
+ 'infraspinatus':'A rotator-cuff muscle on the back of the scapula. It primarily externally rotates the arm and helps stabilize the head of the humerus in the shoulder joint.',
+ 'longissimus thoracis':'A major part of the erector spinae. It extends and laterally flexes the spine and helps maintain an upright trunk.',
+ 'obturator internus':'A deep hip muscle that externally rotates the thigh and helps stabilize the femoral head within the hip socket.',
+ 'pectineus':'A short muscle near the upper inner thigh. It adducts and flexes the hip and assists medial rotation of the thigh.',
+ 'pectoralis major':'The large chest muscle. It adducts and internally rotates the arm and contributes to shoulder flexion and powerful pushing movements.',
+ 'clavicular part of pectoralis major':'The upper portion of the pectoralis major. It helps flex the shoulder and assists horizontal adduction and internal rotation of the arm.',
+ 'sternocostal part of pectoralis major':'The broad middle portion of the pectoralis major. It strongly adducts and internally rotates the arm and contributes to pressing movements.',
+ 'abdominal part of pectoralis major':'The lower portion of the pectoralis major. It assists shoulder adduction and internal rotation and contributes to powerful pushing actions.',
+ 'pectoralis minor':'A small chest muscle beneath the pectoralis major. It draws the scapula forward and downward and helps stabilize the shoulder blade against the rib cage.',
+ 'piriformis':'A deep gluteal muscle that externally rotates the extended thigh and abducts the flexed thigh while helping stabilize the hip.',
+ 'plantaris':'A small posterior lower-leg muscle that assists weakly with knee flexion and plantarflexion and contributes to lower-leg control.',
+ 'popliteus':'A small muscle at the back of the knee that initiates knee flexion by rotating the tibia and helps unlock the knee from full extension.',
+ 'psoas major':'A deep hip flexor that strongly flexes the hip and assists trunk flexion and stabilization of the lumbar spine.',
+ 'rectus femoris':'One of the quadriceps muscles. It extends the knee and also flexes the hip, making it important for kicking, walking, and rising from a seated position.',
+ 'rhomboid major':'A muscle between the spine and scapula that retracts and downwardly rotates the scapula and helps hold the shoulder blade against the rib cage.',
+ 'rhomboid minor':'A smaller muscle above rhomboid major that retracts and downwardly rotates the scapula and contributes to scapular stability.',
+ 'sartorius':'The longest muscle in the body. It flexes, abducts, and externally rotates the hip and also flexes the knee.',
+ 'semimembranosus':'A medial hamstring muscle that extends the hip, flexes the knee, and helps medially rotate the leg when the knee is bent.',
+ 'semitendinosus':'A medial hamstring muscle that extends the hip, flexes the knee, and helps medially rotate the leg when the knee is bent.',
+ 'semispinalis capitis':'A deep posterior neck muscle that extends the head and rotates it slightly toward the opposite side while supporting cervical posture.',
+ 'semispinalis cervicis':'A deep spinal muscle that extends the cervical spine and contributes to controlled rotation and postural stability.',
+ 'semispinalis thoracis':'A deep back muscle that extends the thoracic spine and assists rotation and stabilization of the vertebral column.',
+ 'serratus anterior':'A fan-shaped muscle along the side of the rib cage. It protracts and upwardly rotates the scapula and helps keep the shoulder blade against the chest wall.',
+ 'soleus':'A powerful calf muscle beneath the gastrocnemius. It plantarflexes the ankle and is especially important for standing and steady walking.',
+ 'spinalis':'A deep medial erector-spinae muscle that extends the vertebral column and helps maintain upright posture.',
+ 'spinalis thoracis':'The medial portion of the erector spinae. It extends the thoracic spine and helps maintain upright posture.',
+ 'sternocleidomastoid':'A prominent neck muscle. It flexes the neck, tilts it to one side, and rotates the head to the opposite side; both sides together assist neck flexion.',
+ 'supraspinatus':'A rotator-cuff muscle above the scapular spine. It initiates shoulder abduction and helps stabilize the humeral head in the shoulder joint.',
+ 'teres major':'A posterior shoulder muscle that extends, adducts, and internally rotates the arm.',
+ 'teres minor':'A rotator-cuff muscle that externally rotates the arm and helps stabilize the shoulder joint.',
+ 'trapezius':'A large upper-back muscle that elevates, retracts, depresses, and upwardly rotates the scapula, coordinating shoulder and neck movement.',
+ 'ascending part of trapezius':'The lower portion of the trapezius. It depresses and upwardly rotates the scapula and helps stabilize the shoulder blade.',
+ 'transverse part of trapezius':'The middle portion of the trapezius. It retracts the scapula and helps hold the shoulder blade in position.',
+ 'descending part of trapezius':'The upper portion of the trapezius. It elevates and upwardly rotates the scapula and assists neck and shoulder posture.',
+ 'triceps brachii':'The three-headed muscle on the back of the upper arm. It is the main elbow extensor and the long head also assists shoulder extension and adduction.',
+ 'long head of triceps brachii':'The long head of the triceps extends the elbow and also assists shoulder extension and adduction because it crosses the shoulder joint.',
+ 'lateral head of triceps brachii':'The lateral head of the triceps is a strong elbow extensor, especially during forceful pushing movements.',
+ 'medial head of triceps brachii':'The medial head of the triceps contributes to elbow extension and is active across a wide range of everyday arm movements.',
+ 'vastus intermedius':'A deep quadriceps muscle that extends the knee and contributes to force production during standing, walking, jumping, and squatting.',
+ 'vastus lateralis':'The large outer quadriceps muscle. It extends the knee and helps stabilize the patella during powerful leg movements.',
+ 'vastus medialis':'The inner quadriceps muscle. It extends the knee and contributes to medial stabilization and tracking of the patella.',
+ 'gastrocnemius':'The large two-headed calf muscle. It plantarflexes the ankle and also flexes the knee, contributing strongly to walking, running, and jumping.',
+ 'medial head of gastrocnemius':'The medial head of the gastrocnemius. It plantarflexes the ankle and assists knee flexion during walking, running, and jumping.',
+ 'lateral head of gastrocnemius':'The lateral head of the gastrocnemius. It plantarflexes the ankle and assists knee flexion while contributing to propulsion during gait.',
+ 'head of gastrocnemius':'The two-headed gastrocnemius complex that plantarflexes the ankle and assists knee flexion.',
+ 'head of biceps femoris':'The proximal portion of the biceps femoris complex, which contributes to hip extension and knee flexion.',
+ 'head of muscle organ':'A grouped anatomical muscle region rather than a single named training muscle.',
+ 'zone of muscle organ':'A grouped region of muscle tissue rather than a single named training muscle.'
+};
 export const EXPLANATIONS:Record<string,string> = {
  'heart':'A muscular pump in the chest. Its right side sends blood to the lungs; its left side sends blood through the systemic circulation.',
  'liver':'A large organ beneath the right side of the diaphragm. It processes absorbed nutrients, produces bile, and synthesizes many proteins carried in the blood.',
@@ -21,4 +105,11 @@ export const EXPLANATIONS:Record<string,string> = {
  'trachea':'The main airway connecting the larynx to the bronchi. Its cartilage supports keep the airway open during breathing.',
  'diaphragm':'A broad muscle separating the chest and abdomen. When it contracts, it increases chest volume and helps draw air into the lungs.',
 };
-export function explanation(name:string,system:SystemId){return EXPLANATIONS[name.toLowerCase()] ?? SYSTEMS.find(s=>s.id===system)?.description ?? '';}
+export function hasSpecificExplanation(name:string){
+ const key=name.toLowerCase().replace(/\b(right|left)\b\s*/g,'').replace(/ muscle$/,'');
+ return key in EXPLANATIONS || key in MUSCLE_EXPLANATIONS;
+}
+export function explanation(name:string,system:SystemId){
+ let key=name.toLowerCase().replace(/\b(right|left)\b\s*/g,'').replace(/ muscle$/,'');
+ return EXPLANATIONS[key] ?? MUSCLE_EXPLANATIONS[key] ?? (system==='muscular' ? 'A skeletal muscle that generates force to produce movement, stabilize joints, and support posture.' : SYSTEMS.find(s=>s.id===system)?.description ?? '');
+}
