@@ -62,3 +62,14 @@ Import this repository into Vercel as a Vite project. The included `vercel.json`
 Original application code is released under the [MIT License](LICENSE). **The anatomy data has its own CC BY 4.0 license**; preserve the attribution when redistributing it. Third-party dependencies retain their respective licenses.
 
 Issues and pull requests are welcome. Please include reproduction steps and browser/device details for interaction problems.
+
+
+## GitHub Pages
+
+This Gym Edition is configured for the repository `Sepehr8180/anatomy` and can be deployed directly from GitHub Pages. The workflow in `.github/workflows/deploy-pages.yml` builds the Vite app and publishes `dist/` automatically whenever `main` changes.
+
+After enabling **Settings → Pages → Source: GitHub Actions**, the site will be available at:
+
+`https://sepehr8180.github.io/anatomy/`
+
+For local development, use Node.js 22.13+ and run `npm ci` followed by `npm run dev`; the app uses port 3016.

@@ -1,11 +1,12 @@
 # Human Atlas — Gym Edition
 
-Curated for gym training and everyday movement: major bones, major skeletal muscles, and selected major tendons. Organs, vessels, nerves, and minor muscles are excluded. Model binaries are repacked so excluded geometry is not downloaded.
+This is a deployable Gym Edition based on the supplied Human Atlas source.
 
-## Run
-`npm ci` then `npm run dev`
+- Selected parts: 444
+- Systems: major skeletal bones, major skeletal muscles, major tendons
+- Excluded: organs, vessels, nerves, and minor/non-training muscles
+- Model files are repacked; excluded geometry is not downloaded.
+- Source dataset attribution remains in `public/ATTRIBUTION.md`.
 
-## Build
-`npm run build` then `npm start`
-
-The original attribution/license files remain in `public/ATTRIBUTION.md`.
+Run: `npm ci` then `npm run dev`
+Build: `npm run build`
